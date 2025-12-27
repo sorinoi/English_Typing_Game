@@ -8,9 +8,18 @@ let baseSpeed = 2000; // Base time for word to fall (milliseconds)
 let currentCategory = 'all';
 let isGameOver = false;
 let isPaused = false;
+let mistakesRemaining = 5;
+let maxMistakes = 5;
+let defaultMistakes = 5; // Store the default value from settings
 
 // Vocabulary storage (loaded from JSON)
 let vocabularyByCategory = {};
+
+// Game settings
+let gameSettings = {
+    playerName: '',
+    allowedMistakes: 5
+};
 
 // Sound effects
 const correctSound = new Audio('effects/typing_true.wav');
@@ -18,12 +27,37 @@ const gameOverSound = new Audio('effects/game_over.wav');
 const scoreDownSound = new Audio('effects/score_down.wav');
 const levelUpSound = new Audio('effects/level_up.wav');
 
+// Load fruits from API
+async function loadFruitsFromAPI() {
+    try {
+        const response = await fetch('https://www.fruityvice.com/api/fruit/all');
+        const fruits = await response.json();
+        // Extract fruit names and convert to lowercase
+        const fruitNames = fruits.map(fruit => fruit.name.toLowerCase());
+        console.log('Fruits loaded from API:', fruitNames.length, 'fruits');
+        return fruitNames;
+    } catch (error) {
+        console.error('Error loading fruits from API:', error);
+        return null;
+    }
+}
+
 // Load vocabulary from JSON file
 async function loadVocabulary() {
     try {
         const response = await fetch('vocabulary.json');
         vocabularyByCategory = await response.json();
         console.log('Vocabulary loaded successfully');
+        
+        // Try to load fruits from API
+        const apiFruits = await loadFruitsFromAPI();
+        if (apiFruits && apiFruits.length > 0) {
+            vocabularyByCategory.fruits = apiFruits;
+            console.log('Fruits category updated from API');
+        } else {
+            console.log('Using fruits from vocabulary.json');
+        }
+        
         updateCategoryButtons();
     } catch (error) {
         console.error('Error loading vocabulary:', error);
@@ -80,11 +114,103 @@ function loadFromLocalStorage() {
     return false;
 }
 
+// Load game settings from localStorage (primary) or JSON file (fallback)
+async function loadGameSettings() {
+    // Try to load from JSON file first to get default settings
+    try {
+        const response = await fetch('game_setting.json');
+        const jsonSettings = await response.json();
+        gameSettings = jsonSettings;
+        console.log('Game settings loaded from JSON file');
+    } catch (error) {
+        console.error('Error loading game settings:', error);
+    }
+    
+    // Override with localStorage values if available
+    const savedName = localStorage.getItem('playerName');
+    if (savedName) {
+        gameSettings.playerName = savedName;
+        console.log('Player name loaded from localStorage:', savedName);
+    }
+    
+    // Set max mistakes from settings
+    defaultMistakes = gameSettings.allowedMistakes || 5;
+    maxMistakes = defaultMistakes;
+    mistakesRemaining = maxMistakes;
+    
+    return gameSettings;
+}
+
+// Save game settings (localStorage is primary, JSON file is optional)
+async function saveGameSettings() {
+    // Always save to localStorage first (this always works)
+    localStorage.setItem('playerName', gameSettings.playerName);
+    console.log('Player name saved to localStorage:', gameSettings.playerName);
+    
+    // Try to save to JSON file via PHP (optional, only works with server)
+    try {
+        const response = await fetch('save-settings.php', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(gameSettings)
+        });
+        
+        if (response.ok) {
+            console.log('Game settings also saved to JSON file');
+        }
+    } catch (error) {
+        // Silently fail - localStorage is already saved
+        console.log('JSON file save not available (no server), using localStorage only');
+    }
+}
+
+// Show player name modal
+function showPlayerNameModal() {
+    const modal = document.getElementById('player-name-modal');
+    modal.classList.add('show');
+    document.getElementById('player-name-input').focus();
+}
+
+// Hide player name modal
+function hidePlayerNameModal() {
+    const modal = document.getElementById('player-name-modal');
+    modal.classList.remove('show');
+}
+
+// Save player name
+function savePlayerName() {
+    const nameInput = document.getElementById('player-name-input');
+    const name = nameInput.value.trim();
+    
+    if (!name) {
+        alert('Please enter your name');
+        return;
+    }
+    
+    gameSettings.playerName = name;
+    saveGameSettings();
+    updatePlayerNameDisplay();
+    hidePlayerNameModal();
+    
+    // Enable game input
+    wordInput.disabled = false;
+    wordInput.focus();
+}
+
+// Update player name display
+function updatePlayerNameDisplay() {
+    const playerNameDisplay = document.getElementById('player-name');
+    playerNameDisplay.textContent = gameSettings.playerName || 'Guest';
+}
+
 // DOM elements
 const gameArea = document.getElementById('game-area');
 const wordInput = document.getElementById('word-input');
 const scoreDisplay = document.getElementById('score');
 const levelDisplay = document.getElementById('level');
+const mistakesDisplay = document.getElementById('mistakes');
 
 // Word class
 class FallingWord {
@@ -133,6 +259,9 @@ function initGame() {
     level = 1;
     fallingWords = [];
     isGameOver = false;
+    // Reset to default mistakes when starting new game
+    maxMistakes = defaultMistakes;
+    mistakesRemaining = maxMistakes;
     updateDisplay();
     startGame();
 }
@@ -204,12 +333,12 @@ function startGame() {
                 scoreDownSound.currentTime = 0;
                 scoreDownSound.play().catch(err => console.log('Sound play failed:', err));
                 
-                // Deduct points equal to current level when word reaches bottom
-                score -= level;
+                // Deduct one mistake when word reaches bottom
+                mistakesRemaining--;
                 updateDisplay();
                 
                 // Check for game over
-                if (score < 0) {
+                if (mistakesRemaining <= 0) {
                     gameOver();
                 }
                 
@@ -235,11 +364,13 @@ function togglePause() {
     const wordInput = document.getElementById('word-input');
     
     if (isPaused) {
-        pauseBtn.textContent = '▶ Resume';
+        pauseBtn.textContent = '▶';
+        pauseBtn.title = 'Resume';
         pauseBtn.classList.add('paused');
         wordInput.disabled = true;
     } else {
-        pauseBtn.textContent = '⏸ Pause';
+        pauseBtn.textContent = '⏸';
+        pauseBtn.title = 'Pause';
         pauseBtn.classList.remove('paused');
         wordInput.disabled = false;
         wordInput.focus();
@@ -326,6 +457,11 @@ function checkWord() {
 // Level up
 function levelUp() {
     level++;
+    
+    // Increase max mistakes by 2 on level up
+    maxMistakes += 2;
+    mistakesRemaining = maxMistakes;
+    
     updateDisplay();
     
     // Play level up sound
@@ -340,6 +476,16 @@ function levelUp() {
 function updateDisplay() {
     scoreDisplay.textContent = score;
     levelDisplay.textContent = level;
+    mistakesDisplay.textContent = `${mistakesRemaining}/${maxMistakes}`;
+    
+    // Change color based on remaining mistakes
+    if (mistakesRemaining <= 2) {
+        mistakesDisplay.style.color = '#e74c3c'; // Red
+    } else if (mistakesRemaining <= maxMistakes / 2) {
+        mistakesDisplay.style.color = '#f39c12'; // Orange
+    } else {
+        mistakesDisplay.style.color = '#27ae60'; // Green
+    }
 }
 
 // Settings Modal Functions
@@ -574,9 +720,21 @@ wordInput.addEventListener('keydown', (e) => {
 
 // Start game when page loads
 window.addEventListener('load', async () => {
+    // Load game settings first
+    await loadGameSettings();
+    
     // Try to load from localStorage first, then from JSON
     if (!loadFromLocalStorage()) {
         await loadVocabulary();
+    }
+    
+    // Check if player name is set
+    if (!gameSettings.playerName) {
+        // Disable game input until name is set
+        wordInput.disabled = true;
+        showPlayerNameModal();
+    } else {
+        updatePlayerNameDisplay();
     }
     
     initGame();
@@ -611,4 +769,14 @@ window.addEventListener('load', async () => {
     
     // View category change
     document.getElementById('view-category').addEventListener('change', displayWords);
+    
+    // Player name modal event listeners
+    document.getElementById('save-player-name-btn').addEventListener('click', savePlayerName);
+    
+    // Allow Enter key to save player name
+    document.getElementById('player-name-input').addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') {
+            savePlayerName();
+        }
+    });
 });

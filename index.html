@@ -9,11 +9,19 @@
 <body>
     <div class="game-container">
         <div class="header">
+            <div class="player-name-display">
+                <span class="label">👤 Player:</span>
+                <span id="player-name">Guest</span>
+            </div>
             <div class="score-display">
                 <span class="label">Score:</span>
                 <span id="score">0</span>
             </div>
-            <button id="pause-btn" class="pause-btn">⏸ Pause</button>
+            <div class="mistakes-display">
+                <span class="label">❤️ Lives:</span>
+                <span id="mistakes">5/5</span>
+            </div>
+            <button id="pause-btn" class="pause-btn" title="Pause">⏸</button>
             <div class="level-display">
                 <span class="label">Level:</span>
                 <span id="level">1</span>
@@ -106,6 +114,24 @@
                     <h3>Current Categories</h3>
                     <div id="categories-list" class="categories-list"></div>
                 </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Player Name Modal -->
+    <div id="player-name-modal" class="modal">
+        <div class="modal-content player-name-modal-content">
+            <div class="modal-header">
+                <h2>👤 Welcome to English Typing Game!</h2>
+            </div>
+            <div class="modal-body">
+                <p style="text-align: center; font-size: 18px; margin-bottom: 20px;">
+                    Please enter your name to start playing:
+                </p>
+                <div class="form-group">
+                    <input type="text" id="player-name-input" placeholder="Enter your name" maxlength="20" autofocus>
+                </div>
+                <button id="save-player-name-btn" class="action-btn" style="width: 100%;">Start Game</button>
             </div>
         </div>
     </div>
