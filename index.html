@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>English Vocabulary Typing Game</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="game-container">
+        <div class="header">
+            <div class="score-display">
+                <span class="label">Score:</span>
+                <span id="score">0</span>
+            </div>
+            <button id="pause-btn" class="pause-btn">⏸ Pause</button>
+            <div class="level-display">
+                <span class="label">Level:</span>
+                <span id="level">1</span>
+            </div>
+        </div>
+        
+        <div class="category-container">
+            <div class="category-label">Choose Category:</div>
+            <div class="category-buttons">
+                <button class="category-btn active" data-category="all">All</button>
+                <button class="category-btn" data-category="abc">ABC</button>
+                <button class="category-btn" data-category="animals">Animals</button>
+                <button class="category-btn" data-category="fruits">Fruits</button>
+                <button class="category-btn" data-category="colors">Colors</button>
+                <button class="category-btn" data-category="shapes">Shapes</button>
+            </div>
+        </div>
+        
+        <div id="game-area"></div>
+        
+        <div class="input-container">
+            <input 
+                type="text" 
+                id="word-input" 
+                placeholder="Type the word here..."
+                autocomplete="off"
+                autofocus
+            >
+        </div>
+    </div>
+    
+    <script src="game.js"></script>
+</body>
+</html>
