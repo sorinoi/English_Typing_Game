@@ -1,0 +1,8 @@
+{
+  "abc": ["a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m", "n", "o", "p", "q", "r", "s", "t", "u", "v", "w", "x", "y", "z"],
+  "animals": ["cat", "dog", "bird", "fish", "lion", "tiger", "bear", "elephant", "monkey", "rabbit", "horse", "cow", "pig", "sheep", "duck", "frog"],
+  "fruits": ["apple", "banana", "orange", "grape", "mango", "peach", "pear", "cherry", "lemon", "melon", "berry", "plum"],
+  "colors": ["red", "blue", "green", "yellow", "black", "white", "pink", "purple", "brown", "gray", "orange"],
+  "shapes": ["circle", "square", "triangle", "star", "heart", "oval", "diamond", "rectangle"],
+  "all": ["cat", "dog", "bird", "fish", "tree", "sun", "moon", "star", "book", "pen", "ball", "car", "bus", "home", "door", "window", "apple", "banana", "orange", "grape", "water", "milk", "bread", "chair", "table", "bed", "lamp", "clock", "phone", "computer", "happy", "sad", "big", "small", "hot", "cold", "fast", "slow", "red", "blue", "green", "yellow", "black", "white", "pink", "purple"]
+}

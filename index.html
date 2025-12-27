@@ -18,6 +18,7 @@
                 <span class="label">Level:</span>
                 <span id="level">1</span>
             </div>
+            <button id="settings-btn" class="settings-btn" title="Settings">⚙️</button>
         </div>
         
         <div class="category-container">
@@ -42,6 +43,70 @@
                 autocomplete="off"
                 autofocus
             >
+        </div>
+    </div>
+    
+    <!-- Settings Modal -->
+    <div id="settings-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>⚙️ Game Settings</h2>
+                <span class="close-btn" id="close-settings">&times;</span>
+            </div>
+            <div class="modal-body">
+                <div class="settings-tabs">
+                    <button class="tab-btn active" data-tab="manage-words">Manage Words</button>
+                    <button class="tab-btn" data-tab="manage-categories">Manage Categories</button>
+                </div>
+                
+                <!-- Manage Words Tab -->
+                <div id="manage-words" class="tab-content active">
+                    <h3>Add New Word</h3>
+                    <div class="form-group">
+                        <label for="new-word">Word:</label>
+                        <input type="text" id="new-word" placeholder="Enter new word">
+                    </div>
+                    <div class="form-group">
+                        <label for="word-category">Category:</label>
+                        <select id="word-category">
+                            <option value="all">All</option>
+                            <option value="abc">ABC</option>
+                            <option value="animals">Animals</option>
+                            <option value="fruits">Fruits</option>
+                            <option value="colors">Colors</option>
+                            <option value="shapes">Shapes</option>
+                        </select>
+                    </div>
+                    <button id="add-word-btn" class="action-btn">Add Word</button>
+                    
+                    <h3>Current Words</h3>
+                    <div class="form-group">
+                        <label for="view-category">View Category:</label>
+                        <select id="view-category">
+                            <option value="all">All</option>
+                            <option value="abc">ABC</option>
+                            <option value="animals">Animals</option>
+                            <option value="fruits">Fruits</option>
+                            <option value="colors">Colors</option>
+                            <option value="shapes">Shapes</option>
+                        </select>
+                    </div>
+                    <div id="words-list" class="words-list"></div>
+                </div>
+                
+                <!-- Manage Categories Tab -->
+                <div id="manage-categories" class="tab-content">
+                    <h3>Add New Category</h3>
+                    <div class="form-group">
+                        <label for="new-category">Category Name:</label>
+                        <input type="text" id="new-category" placeholder="Enter category name">
+                    </div>
+                    <button id="add-category-btn" class="action-btn">Add Category</button>
+                    
+                    <h3>Current Categories</h3>
+                    <div id="categories-list" class="categories-list"></div>
+                </div>
+            </div>
         </div>
     </div>
     
