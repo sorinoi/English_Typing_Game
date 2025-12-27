@@ -8,6 +8,7 @@ let baseSpeed = 2000; // Base time for word to fall (milliseconds)
 let currentCategory = 'all';
 let isGameOver = false;
 let isPaused = false;
+let wasGamePausedByModal = false; // Track if game was paused by modal
 let mistakesRemaining = 5;
 let maxMistakes = 5;
 let defaultMistakes = 5; // Store the default value from settings
@@ -168,6 +169,13 @@ async function saveGameSettings() {
 
 // Show player name modal
 function showPlayerNameModal() {
+    // Pause game if it's running
+    if (!isPaused && !isGameOver) {
+        isPaused = true;
+        wasGamePausedByModal = true;
+        console.log('Game paused for player name input');
+    }
+    
     const modal = document.getElementById('player-name-modal');
     modal.classList.add('show');
     document.getElementById('player-name-input').focus();
@@ -177,6 +185,13 @@ function showPlayerNameModal() {
 function hidePlayerNameModal() {
     const modal = document.getElementById('player-name-modal');
     modal.classList.remove('show');
+    
+    // Resume game if it was paused by modal
+    if (wasGamePausedByModal && !isGameOver) {
+        isPaused = false;
+        wasGamePausedByModal = false;
+        console.log('Game resumed after player name input');
+    }
 }
 
 // Save player name
@@ -434,6 +449,12 @@ function checkWord() {
         correctSound.currentTime = 0; // Reset sound to start
         correctSound.play().catch(err => console.log('Sound play failed:', err));
         
+        // Recover 1 life if not at maximum
+        if (mistakesRemaining < maxMistakes) {
+            mistakesRemaining++;
+            console.log('Life recovered! Now:', mistakesRemaining, '/', maxMistakes);
+        }
+        
         // Update score
         score++;
         updateDisplay();
@@ -460,7 +481,8 @@ function levelUp() {
     
     // Increase max mistakes by 2 on level up
     maxMistakes += 2;
-    mistakesRemaining = maxMistakes;
+    // Also add 2 to current remaining mistakes (don't reset to max)
+    mistakesRemaining += 2;
     
     updateDisplay();
     
@@ -490,6 +512,13 @@ function updateDisplay() {
 
 // Settings Modal Functions
 function openSettings() {
+    // Pause game if it's running
+    if (!isPaused && !isGameOver) {
+        isPaused = true;
+        wasGamePausedByModal = true;
+        console.log('Game paused for settings');
+    }
+    
     const modal = document.getElementById('settings-modal');
     modal.classList.add('show');
     displayWords();
@@ -499,6 +528,14 @@ function openSettings() {
 function closeSettings() {
     const modal = document.getElementById('settings-modal');
     modal.classList.remove('show');
+    
+    // Resume game if it was paused by modal
+    if (wasGamePausedByModal && !isGameOver) {
+        isPaused = false;
+        wasGamePausedByModal = false;
+        wordInput.focus();
+        console.log('Game resumed after settings');
+    }
 }
 
 // Tab switching
